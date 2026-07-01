@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FZ Fassara - Watch {{ video.title }}</title>
+    <style>
+        /* Pure local premium styling - 100% independent of internet data */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            background-color: #141414; 
+            color: #ffffff; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            padding-bottom: 50px;
+        }
+        
+        /* Top Navigation Header bar */
+        .navbar {
+            background-color: #000000;
+            border-bottom: 2px solid #252525;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+        }
+        .btn-back {
+            background-color: transparent;
+            color: #ffffff;
+            border: 2px solid #444444;
+            padding: 8px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 1rem;
+        }
+        .brand-title {
+            color: #e50914;
+            font-weight: bold;
+            font-size: 1.2rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 75%;
+        }
+
+        /* Video Player Screen Core */
+        .player-wrapper {
+            background-color: #000000;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            border-bottom: 2px solid #252525;
+        }
+        video {
+            width: 100%;
+            max-width: 900px;
+            max-height: 65vh;
+            object-fit: contain;
+            outline: none;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Premium Large Metadata Container */
+        .meta-container {
+            background-color: #1f1f1f;
+            border-radius: 12px;
+            border: 2px solid #2d2d2d;
+            padding: 22px;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .movie-title {
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+        .analytics-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            color: #aaaaaa;
+            font-size: 0.9rem;
+            margin-bottom: 18px;
+            border-bottom: 1px solid #2d2d2d;
+            padding-bottom: 12px;
+        }
+        .description-box {
+            background-color: #141414;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: #cccccc;
+            line-height: 1.5;
+            margin-bottom: 22px;
+            border: 1px solid #252525;
+        }
+
+        /* Large Action Buttons Layout for Easy Mobile Execution */
+        .action-tray {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .tray-row {
+            display: flex;
+            gap: 12px;
+        }
+        .btn-action {
+            flex: 1;
+            padding: 16px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            border-radius: 10px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-outline {
+            background-color: transparent;
+            color: #ffffff;
+            border: 2px solid #444444;
+        }
+        .btn-outline-active {
+            background-color: #e50914;
+            color: #ffffff;
+            border: 2px solid #e50914;
+        }
+        .btn-download-big {
+            display: block;
+            width: 100%;
+            background-color: #e50914;
+            color: #ffffff;
+            font-size: 1.15rem;
+            font-weight: 900;
+            padding: 18px;
+            border-radius: 10px;
+            text-align: center;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
+            border: none;
+        }
+
+        /* Giant Premium Movie Box Style Grid Matrix for Recommendations */
+        .rec-title { font-size: 1.3rem; font-weight: 900; margin: 30px 0 15px 0; border-left: 4px solid #e50914; padding-left: 10px; }
+        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 15px; }
+        .movie-tile { background-color: #1f1f1f; border-radius: 10px; overflow: hidden; border: 2px solid #2d2d2d; display: flex; flex-direction: column; }
+        .thumb-container { position: relative; width: 100%; padding-top: 56.25%; background-color: #000; }
+        .thumb-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+        .tile-body { padding: 12px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .rec-movie-title { font-size: 0.95rem; font-weight: bold; color: white; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation Header -->
+    <nav class="navbar">
+        <a href="/dashboard" class="btn-back">←</a>
+        <h1 class="brand-title">{{ video.title }}</h1>
+    </nav>
+
+    <!-- 1. Native HTML5 Media Player Panel -->
+    <div class="player-wrapper">
+        <video controls poster="{{ url_for('stream_thumb', filename=video.thumbnail) }}" preload="metadata">
+            <source src="{{ url_for('stream_video', filename=video.filename) }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="container">
+        
+        <!-- System Alerts Tracker -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div style="background-color: #2d2d2d; color: #ffc107; padding: 12px; border-radius: 6px; margin-top: 15px; text-align: center; font-size: 0.95rem; font-weight: bold;">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- 2. Upgraded Large Movie Description Matrix -->
+        <div class="meta-container">
+            <h2 class="movie-title">{{ video.title }}</h2>
+            
+            <div class="analytics-bar">
+                <span>👁 <strong>{{ video.views }}</strong> views</span>
+                <span>📥 <strong>{{ video.downloads }}</strong> downloads</span>
+                <span>📁 Category: <strong style="color: #e50914;">{{ video.category }}</strong></span>
+                <span style="text-transform: capitalize;">👤 By: {{ video.uploader.name }}</span>
+            </div>
+            
+            {% if video.description %}
+                <div class="description-box">{{ video.description }}</div>
+            {% endif %}
+
+            <!-- 3. Enterprise Action Buttons tray -->
+            <div class="action-tray">
+                <div class="tray-row">
+                    <!-- Dynamic Like Button -->
+                    <a href="{{ url_for('like_video', video_id=video.id) }}" class="btn-action {% if has_liked %}btn-outline-active{% else %}btn-outline{% endif %}" style="text-decoration: none;">
+                        👍 {% if has_liked %}Liked{% else %}Like{% endif %} ({{ likes }})
+                    </a>
+                    <!-- Watch Later Button -->
+                    <a href="{{ url_for('add_to_watchlist', video_id=video.id) }}" class="btn-action btn-outline" style="text-decoration: none;">
+                        🔖 Watch Later
+                    </a>
+                </div>
+                
+                <div class="tray-row">
+                    <!-- Direct Offline Share Button -->
+                    <button class="btn-action btn-outline" onclick="copyVideoLink()">
+                        🔗 Share Video Link
+                    </button>
+                </div>
+                
+                <!-- Massive Cinema Downloader Control Button -->
+                <a href="{{ url_for('download_video', video_id=video.id) }}" class="btn-download-big">
+                    📥 Download MP4 File
+                </a>
+            </div>
+        </div>
+
+        <!-- 4. Recommended / Related Videos Matrix Row -->
+        <h3 class="rec-title">Recommended For You</h3>
+        <div class="movie-grid">
+            {% for rec in recommended %}
+                <div class="movie-tile">
+                    <div class="thumb-container">
+                        <img src="{{ url_for('stream_thumb', filename=rec.thumbnail) }}" class="thumb-img" alt="Cover">
+                    </div>
+                    <div class="tile-body">
+                        <h4 class="rec-movie-title">{{ rec.title }}</h4>
+                        <a href="{{ url_for('watch_video', video_id=rec.id) }}" class="btn-watch" style="font-size: 0.85rem; padding: 8px;">Watch Now</a>
+                    </div>
+                </div>
+            {% else %}
+                <p style="color: #666; font-size: 0.9rem; grid-column: 1/-1;">No related videos found in this category.</p>
+            {% endfor %}
+        </div>
+
+        <!-- 5. Interactive Nested Comments Infrastructure -->
+        <div style="background-color: #1f1f1f; border: 2px solid #2d2d2d; border-radius: 12px; padding: 22px; margin-top: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+            <h3 style="font-size: 1.2rem; font-weight: bold; margin-bottom: 18px; border-left: 4px solid #e50914; padding-left: 10px;">Discussion Thread</h3>
+            
+            <!-- Main Top-Level Comment Submission Form -->
+            <form method="POST" style="display: flex; gap: 10px; margin-bottom: 25px;">
+                <input type="text" name="comment_text" style="flex-grow: 1; padding: 14px; background-color: #2d2d2d; color: #ffffff; border: 1px solid #444444; border-radius: 8px; font-size: 1rem; outline: none;" placeholder="Add a public comment..." required autocomplete="off">
+                <button type="submit" style="background-color: #e50914; color: white; border: none; padding: 14px 24px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer;">Post</button>
+            </form>
+
+            <!-- Render Existing Main Comments Feed -->
+            <div>
+                {% for comment in video.comments if not comment.parent_id %}
+                    <div style="border-bottom: 1px solid #2d2d2d; padding: 15px 5px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px;">
+                            <span style="color: #e50914; font-weight: bold; text-transform: capitalize;">👤 {{ comment.author.name }}</span>
+                            <span style="color: #888888;">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                        </div>
+                        <p style="font-size: 1rem; color: #dddddd; padding-left: 5px; line-height: 1.4;">{{ comment.text }}</p>
+                        
+                        <!-- Toggle Button to Open Reply Form Element -->
+                        <button onclick="toggleReplyForm({{ comment.id }})" style="background: transparent; border: none; color: #aaaaaa; font-size: 0.85rem; font-weight: bold; cursor: pointer; margin-top: 8px; padding-left: 5px;">💬 Reply</button>
+                        
+                        <!-- Dynamic Hidden Target Box for Nested Reply Form -->
+                        <div id="reply-form-{{ comment.id }}" style="display: none; margin-top: 12px; padding-left: 20px;">
+                            <form method="POST" style="display: flex; gap: 10px;">
+                                <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                                <input type="text" name="comment_text" style="flex-grow: 1; padding: 10px; background-color: #141414; color: #ffffff; border: 1px solid #444; border-radius: 6px; font-size: 0.95rem; outline: none;" placeholder="Write a reply..." required autocomplete="off">
+                                <button type="submit" style="background-color: #e50914; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer;">Reply</button>
+                            </form>
+                        </div>
+
+                        <!-- Render Nested Child Replies Loop inside Main Comment Thread -->
+                        {% if comment.replies %}
+                            <div style="margin-top: 15px; padding-left: 25px; border-left: 2px solid #333;">
+                                {% for reply in comment.replies %}
+                                    <div style="background-color: #141414; padding: 10px; border-radius: 6px; margin-bottom: 8px; border: 1px solid #222;">
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
+                                            <span style="color: #ffc107; font-weight: bold; text-transform: capitalize;">↩️ {{ reply.author.name }}</span>
+                                            <span style="color: #666666;">{{ reply.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                                        </div>
+                                        <p style="font-size: 0.95rem; color: #cccccc;">{{ reply.text }}</p>
+                                    </div>
+                                </for>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <p style="color: #666666; text-align: center; font-size: 0.95rem; padding: 15px 0;">No comments available yet. Start the conversation!</p>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 100% Offline Native Browser Action Script Engine Logic -->
+    <script>
+        function toggleReplyForm(commentId) {
+            var form = document.getElementById('reply-form-' + commentId);
+            if (form.style.display === 'none') {
+                form.style.display = 'flex';
+            } else {
+                form.style.display = 'none';
+            }
+        }
+
+        function copyVideoLink() {
+            var dummy = document.createElement('input'),
+            text = window.location.href;
+            document.body.appendChild(dummy);
+            dummy.value = text;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            alert('Video Link Copied Successfully! Za ka iya tura wa abokanka a WhatsApp ko Telegram.');
+        }
+    </script>
+</body>
+</html>
