@@ -1,4 +1,6 @@
 import os
+import base64
+import json
 from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -15,7 +17,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-# Dauko Google Client ID
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '785114901229-n6o1vbp13pq5i1150s76j3ech421rutl.apps.googleusercontent.com')
 REDIRECT_URI = "https://fz123.onrender.com/login/google/callback"
 
@@ -68,47 +69,55 @@ def register():
 
 @app.route('/login/google')
 def login_google():
+    # Amfani da response_type=id_token domin kaucewa bukatar Client Secret gaba daya
     google_provider_cfg = requests.get("https://accounts.google.com/.well-known/openid-configuration").json()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
     
-    request_uri = f"{authorization_endpoint}?response_type=code&client_id={GOOGLE_CLIENT_ID}&redirect_uri={REDIRECT_URI}&scope=openid%20email%20profile"
+    # Muna amfani da response_mode=form_post don karban bayanan sirri lafiya
+    request_uri = (
+        f"{authorization_endpoint}?response_type=id_token&client_id={GOOGLE_CLIENT_ID}"
+        f"&redirect_uri={REDIRECT_URI}&scope=openid%20email%20profile"
+        f"&nonce=fz123nonce&response_mode=form_post"
+    )
     return redirect(request_uri)
 
-@app.route('/login/google/callback')
+@app.route('/login/google/callback', methods=['POST'])
 def google_callback():
-    code = request.args.get("code")
-    google_provider_cfg = requests.get("https://accounts.google.com/.well-known/openid-configuration").json()
-    token_endpoint = google_provider_cfg["token_endpoint"]
+    # Google zai turo id_token ta hanyar POST request
+    id_token = request.form.get("id_token")
+    if not id_token:
+        flash("Google authentication failed: Missing token.")
+        return redirect(url_for('login'))
     
-    token_response = requests.post(
-        token_endpoint,
-        data={
-            "code": code,
-            "client_id": GOOGLE_CLIENT_ID,
-            "client_secret": "BA_BU_BU_QATAR_SECRET",
-            "redirect_uri": REDIRECT_URI,
-            "grant_type": "authorization_code"
-        }
-    )
-    
-    userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
-    headers = {"Authorization": f"Bearer {token_response.json()['access_token']}"}
-    userinfo_response = requests.get(userinfo_endpoint, headers=headers)
-    
-    if userinfo_response.json().get("email_verified"):
-        email = userinfo_response.json()["email"]
-        username = userinfo_response.json()["name"]
-        
-        user = User.query.filter_by(email=email).first()
-        if not user:
-            user = User(username=username, email=email, password=None)
-            db.session.add(user)
-            db.session.commit()
+    try:
+        # Fassarar id_token ba tare da bukatar wani library na daban ba
+        segments = id_token.split('.')
+        if len(segments) < 2:
+            raise ValueError("Invalid token")
             
-        login_user(user)
-        return redirect(url_for('dashboard'))
-    
-    flash("Google authentication failed.")
+        payload_b64 = segments[1]
+        # Gyara padding na base64 idan akwai bukata
+        payload_b64 += '=' * (-len(payload_b64) % 4)
+        payload_json = base64.b64decode(payload_b64).decode('utf-8')
+        user_info = json.loads(payload_json)
+        
+        email = user_info.get("email")
+        username = user_info.get("name", email.split('@')[0])
+        
+        if email:
+            user = User.query.filter_by(email=email).first()
+            if not user:
+                # Idan babu shi, mu kirkiri sabon asusu
+                user = User(username=username, email=email, password=None)
+                db.session.add(user)
+                db.session.commit()
+                
+            login_user(user)
+            return redirect(url_for('dashboard'))
+            
+    except Exception as e:
+        flash(f"Error decoding Google login: {str(e)}")
+        
     return redirect(url_for('login'))
 
 @app.route('/dashboard')
