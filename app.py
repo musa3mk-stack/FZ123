@@ -17,8 +17,8 @@ login_manager.login_view = 'login'
 
 # Dauko Google Client ID daga Environment Variables na Render
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '785114901229-n6o1vbp13pq5i1150s76j3ech421rutl.apps.googleusercontent.com')
-# Tabbatar da asalin URL din fz-fassara na Render
-REDIRECT_URI = "https://fz-fassara.onrender.com/login/google/callback"
+# Sabon URL dinka na fz123
+REDIRECT_URI = "https://fz123.onrender.com/login/google/callback"
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -34,7 +34,7 @@ def load_user(user_id):
 def home():
     return redirect(url_for('login'))
 
-@app.route('/login', models=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
@@ -69,7 +69,6 @@ def register():
 
 @app.route('/login/google')
 def login_google():
-    # Hanyar tura mai amfani zuwa shafin zaben Google na asali
     google_provider_cfg = requests.get("https://accounts.google.com/.well-known/openid-configuration").json()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
     
@@ -87,14 +86,14 @@ def google_callback():
         data={
             "code": code,
             "client_id": GOOGLE_CLIENT_ID,
-            "client_secret": "BA_BU_BU_QATAR_SECRET", # Google baya tilasta sirri idan anyi daidai
+            "client_secret": "BA_BU_BU_QATAR_SECRET",
             "redirect_uri": REDIRECT_URI,
             "grant_type": "authorization_code"
         }
     )
     
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
-    uri, headers, body = token_response.json(), {"Authorization": f"Bearer {token_response.json()['access_token']}"}, None
+    headers = {"Authorization": f"Bearer {token_response.json()['access_token']}"}
     userinfo_response = requests.get(userinfo_endpoint, headers=headers)
     
     if userinfo_response.json().get("email_verified"):
