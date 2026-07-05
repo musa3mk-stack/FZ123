@@ -1,151 +1,204 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ha">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FZ Fassara - Sign In</title>
+    <title>Sign In - FZ Fassara</title>
     <style>
-        /* Pure local premium styling - No internet required to load */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            background-color: #141414; 
-            color: #ffffff; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            height: 100vh;
+        :root {
+            --bg-color: #0f0f1e;
+            --card-bg: #16162a;
+            --accent-color: #00ffcc;
+            --text-color: #ffffff;
+            --muted-text: #8b8ba7;
+            --google-btn: #ffffff;
+            --google-text: #1f1f1f;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .login-container {
+            background-color: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(0, 255, 204, 0.1);
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 2rem;
+            color: var(--accent-color);
+            font-size: 2rem;
+            letter-spacing: 1px;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--muted-text);
+            font-size: 0.9rem;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #2d2d44;
+            background-color: #0f0f1e;
+            color: #fff;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(45deg, #00ffcc, #0099ff);
+            border: none;
+            border-radius: 8px;
+            color: #0f0f1e;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            margin-top: 1rem;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+        .divider {
+            margin: 2rem 0;
+            position: relative;
+            text-align: center;
+        }
+        .divider::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: #2d2d44;
+            z-index: 1;
+        }
+        .divider span {
+            background-color: var(--card-bg);
+            padding: 0 10px;
+            color: var(--muted-text);
+            font-size: 0.85rem;
+            position: relative;
+            z-index: 2;
+        }
+        .btn-google {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-        }
-        .login-card { 
-            background-color: rgba(0, 0, 0, 0.85); 
-            padding: 40px 30px; 
-            border-radius: 12px; 
-            max-width: 420px; 
-            width: 100%; 
-            border: 1px solid #2d2d2d;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-        }
-        .brand-name {
-            color: #e50914;
-            font-size: 2.2rem;
-            font-weight: 900;
-            text-align: center;
-            margin-bottom: 25px;
-            letter-spacing: 2px;
-        }
-        .page-title {
-            font-size: 1.4rem;
-            font-weight: bold;
-            margin-bottom: 25px;
-        }
-        .form-group {
-            margin-bottom: 22px;
-        }
-        .form-label { 
-            display: block;
-            margin-bottom: 8px;
-            color: #aaaaaa; 
-            font-size: 0.9rem; 
-            font-weight: bold;
-        }
-        /* Big Bold Input Fields for Easy Smartphone Typing */
-        .form-control {
             width: 100%;
-            padding: 16px;
-            background-color: #2d2d2d;
-            color: #ffffff;
-            border: 1px solid #444444;
-            border-radius: 8px;
-            font-size: 1.05rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .form-control:focus {
-            border-color: #e50914;
-        }
-        /* Big Bold Red Premium Action Button */
-        .btn-netflix { 
-            display: block;
-            width: 100%;
-            background-color: #e50914; 
-            color: #ffffff; 
-            font-weight: bold;
-            font-size: 1.1rem;
-            border: none;
-            padding: 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 10px;
-            box-shadow: 0 4px 12px rgba(229, 9, 20, 0.3);
-        }
-        .btn-netflix:active {
-            transform: scale(0.99);
-        }
-        .alert {
-            background-color: #e50914;
-            color: white;
             padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            text-align: center;
+            background-color: var(--google-btn);
+            color: var(--google-text);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
             font-size: 0.95rem;
-            font-weight: 500;
+            box-sizing: border-box;
+            transition: background-color 0.3s;
+        }
+        .btn-google:hover {
+            background-color: #f1f1f1;
+        }
+        .btn-google svg {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
         }
         .footer-text {
-            margin-top: 30px;
-            text-align: center;
-            color: #aaaaaa;
-            font-size: 0.95rem;
+            margin-top: 2rem;
+            color: var(--muted-text);
+            font-size: 0.9rem;
         }
         .footer-text a {
-            color: #ffffff;
+            color: var(--accent-color);
             text-decoration: none;
-            font-weight: bold;
         }
-        .back-home {
-            display: block;
-            text-align: center;
-            margin-top: 15px;
-            color: #aaaaaa;
-            text-decoration: none;
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
+        .flash-messages {
+            background-color: rgba(255, 0, 85, 0.1);
+            border: 1px solid #ff0055;
+            color: #ff0055;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
             font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
 
-    <div class="login-card">
-        <div class="brand-name">FZ FASSARA</div>
-        <h2 class="page-title">Sign In</h2>
-        
-        <!-- Display Notification Alerts locally -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+<div class="login-container">
+    <h2>Shiga Ciki</h2>
 
-        <!-- Interactive Secure Login Form -->
-        <form method="POST" action="/login">
-            <div class="form-group">
-                <label class="form-label">Email Address</label>
-                <input type="email" name="email" class="form-control" required autocomplete="off">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" required>
-            </div>
-            <button type="submit" class="btn-netflix">Sign In</button>
-        </form>
-        
-        <div class="footer-text">
-            New to FZ Fassara? <a href="/register">Sign up now</a>.
+    <!-- Flash Messages ga Kurakurai -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for message in messages %}
+            {{ message }}
+          {% endfor %}
         </div>
-        <a href="/" class="back-home">← Back to Home</a>
+      {% endif %}
+    {% endwith %}
+
+    <form action="/login" method="POST">
+        <div class="form-group">
+            <label for="username">Sunan Mai Amfani (Username)</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Kalmar Sirri (Password)</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit" class="btn-submit">Shiga</button>
+    </form>
+
+    <div class="divider">
+        <span>KUMA KO</span>
     </div>
+
+    <!-- Wannan Shi Ne Maballin Google Da Aka Gyara -->
+    <a href="/login/google" class="btn-google">
+        <svg viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Yi amfani da Google
+    </a>
+
+    <div class="footer-text">
+        Baka da asusu ba tukunna? <a href="/register">Yi Rajista Mana</a>
+    </div>
+</div>
 
 </body>
 </html>
