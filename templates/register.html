@@ -1,155 +1,140 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ha">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FZ Fassara - Register</title>
+    <title>Register - FZ Fassara</title>
     <style>
-        /* Pure local premium styling - No internet required to load */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            background-color: #141414; 
-            color: #ffffff; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            height: 100vh;
+        :root {
+            --bg-color: #0f0f1e;
+            --card-bg: #16162a;
+            --accent-color: #00ffcc;
+            --text-color: #ffffff;
+            --muted-text: #8b8ba7;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
             display: flex;
-            align-items: center;
             justify-content: center;
-            padding: 20px;
+            align-items: center;
+            min-height: 100vh;
         }
-        .register-card { 
-            background-color: rgba(0, 0, 0, 0.85); 
-            padding: 35px 30px; 
-            border-radius: 12px; 
-            max-width: 420px; 
-            width: 100%; 
-            border: 1px solid #2d2d2d;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-        }
-        .brand-name {
-            color: #e50914;
-            font-size: 2.2rem;
-            font-weight: 900;
+        .register-container {
+            background-color: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(0, 255, 204, 0.1);
             text-align: center;
-            margin-bottom: 25px;
-            letter-spacing: 2px;
         }
-        .page-title {
-            font-size: 1.4rem;
-            font-weight: bold;
-            margin-bottom: 25px;
+        h2 {
+            margin-bottom: 2rem;
+            color: var(--accent-color);
+            font-size: 2rem;
+            letter-spacing: 1px;
         }
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
+            text-align: left;
         }
-        .form-label { 
+        label {
             display: block;
-            margin-bottom: 8px;
-            color: #aaaaaa; 
-            font-size: 0.9rem; 
-            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--muted-text);
+            font-size: 0.9rem;
         }
-        /* Big Bold Input Fields for Easy Smartphone Typing */
-        .form-control {
+        input {
             width: 100%;
-            padding: 16px;
-            background-color: #2d2d2d;
-            color: #ffffff;
-            border: 1px solid #444444;
-            border-radius: 8px;
-            font-size: 1.05rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .form-control:focus {
-            border-color: #e50914;
-        }
-        /* Big Bold Red Premium Action Button */
-        .btn-netflix { 
-            display: block;
-            width: 100%;
-            background-color: #e50914; 
-            color: #ffffff; 
-            font-weight: bold;
-            font-size: 1.1rem;
-            border: none;
-            padding: 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 10px;
-            box-shadow: 0 4px 12px rgba(229, 9, 20, 0.3);
-        }
-        .btn-netflix:active {
-            transform: scale(0.99);
-        }
-        .alert {
-            background-color: #e50914;
-            color: white;
             padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-size: 0.95rem;
-            font-weight: 500;
+            border-radius: 8px;
+            border: 1px solid #2d2d44;
+            background-color: #0f0f1e;
+            color: #fff;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(45deg, #00ffcc, #0099ff);
+            border: none;
+            border-radius: 8px;
+            color: #0f0f1e;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            margin-top: 1rem;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
         }
         .footer-text {
-            margin-top: 30px;
-            text-align: center;
-            color: #aaaaaa;
-            font-size: 0.95rem;
+            margin-top: 2rem;
+            color: var(--muted-text);
+            font-size: 0.9rem;
         }
         .footer-text a {
-            color: #ffffff;
+            color: var(--accent-color);
             text-decoration: none;
-            font-weight: bold;
         }
-        .back-home {
-            display: block;
-            text-align: center;
-            margin-top: 15px;
-            color: #aaaaaa;
-            text-decoration: none;
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
+        .flash-messages {
+            background-color: rgba(255, 0, 85, 0.1);
+            border: 1px solid #ff0055;
+            color: #ff0055;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
             font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
 
-    <div class="register-card">
-        <div class="brand-name">FZ FASSARA</div>
-        <h2 class="page-title">Create Account</h2>
-        
-        <!-- Display Notification Alerts locally -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+<div class="register-container">
+    <h2>Ƙirƙiri Asusunka</h2>
 
-        <!-- Interactive Secure Registration Form -->
-        <form method="POST" action="/register">
-            <div class="form-group">
-                <label class="form-label">Full Name</label>
-                <input type="text" name="name" class="form-control" required autocomplete="off">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Email Address</label>
-                <input type="email" name="email" class="form-control" required autocomplete="off">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" required>
-            </div>
-            <button type="submit" class="btn-netflix">Sign Up</button>
-        </form>
-        
-        <div class="footer-text">
-            Already have an account? <a href="/login">Sign in now</a>.
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for message in messages %}
+            {{ message }}
+          {% endfor %}
         </div>
-        <a href="/" class="back-home">← Back to Home</a>
+      {% endif %}
+    {% endwith %}
+
+    <form action="/register" method="POST">
+        <div class="form-group">
+            <label for="username">Zabi Sunan Mai Amfani (Username)</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Kalmar Sirri (Password)</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit" class="btn-submit">Yi Rajista</button>
+    </form>
+
+    <div class="footer-text">
+        Kuna da asusu riga? <a href="/login">Shiga dashi</a>
     </div>
+</div>
 
 </body>
 </html>
