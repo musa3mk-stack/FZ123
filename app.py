@@ -15,9 +15,8 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-# Dauko Google Client ID daga Environment Variables na Render
+# Dauko Google Client ID
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '785114901229-n6o1vbp13pq5i1150s76j3ech421rutl.apps.googleusercontent.com')
-# Sabon URL dinka na fz123
 REDIRECT_URI = "https://fz123.onrender.com/login/google/callback"
 
 class User(UserMixin, db.Model):
