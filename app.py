@@ -1,22 +1,37 @@
 import os
+import json
+import requests
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, flash, abort, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, abort, send_from_directory, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
-# High-performance enterprise system directory mapping for Pydroid3 Android Environment
+# High-performance enterprise system directory mapping
 project_root = os.path.dirname(os.path.abspath(__file__))
 template_dir = os.path.join(project_root, 'templates')
 
 app = Flask(__name__, template_folder=template_dir)
-app.config['SECRET_KEY'] = 'fz_fassara_mega_ultra_premium_key_2026'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fz_fassara_mega_ultra_premium_key_2026')
 
-# SQLite Database Setup Configuration
-db_path = os.path.join(project_root, 'vtu_database.db')
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+# ENVIRONMENT-ADAPTIVE DATABASE CONFIGURATION MATRIX (SQLite for Local Pydroid3, PostgreSQL for Render)
+database_url = os.environ.get('DATABASE_URL')
+if database_url and database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+if database_url:
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+else:
+    db_path = os.path.join(project_root, 'vtu_database.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Google OAuth2 Credentials Configurations (Fetches dynamically from Render Environment Variables)
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
+GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
 
 # Maximum 200MB file processing safety threshold
 app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024
@@ -40,7 +55,6 @@ ADMIN_PASSWORD_PLAIN = "FZ12345@"
 # ADVANCED ENTERPRISE DATABASE SCHEMA MATRIX (100% EXPANDED CAPABILITY)
 # =========================================================================
 
-# Subscriber link join table for Channels system
 subscribers = db.Table('subscribers',
     db.Column('channel_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
     db.Column('subscriber_id', db.Integer, db.ForeignKey('users.id'), primary_key=True)
@@ -51,14 +65,13 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
     name = db.Column(db.String(100), nullable=False)
-    password_hash = db.Column(db.String(200), nullable=False)
+    password_hash = db.Column(db.String(200), nullable=True) # Modified to Nullable for direct Google Logins
     bio = db.Column(db.String(300), default='No bio available.')
     profile_pic = db.Column(db.String(200), default='default_avatar.png')
     is_admin = db.Column(db.Boolean, default=False)
-    is_premium = db.Column(db.Boolean, default=False) # Subscription Monetization check
+    is_premium = db.Column(db.Boolean, default=False) 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Relationships infrastructure mapping
     videos = db.relationship('Video', backref='uploader', lazy=True, cascade="all, delete-orphan")
     comments = db.relationship('Comment', backref='author', lazy=True, cascade="all, delete-orphan")
     notifications = db.relationship('Notification', backref='user', lazy=True, cascade="all, delete-orphan")
@@ -66,7 +79,6 @@ class User(UserMixin, db.Model):
     watchlist = db.relationship('WatchLater', backref='user', lazy=True, cascade="all, delete-orphan")
     likes = db.relationship('VideoLike', backref='user', lazy=True, cascade="all, delete-orphan")
 
-    # Channel subscriber execution tracking mapping
     subscriptions = db.relationship(
         'User', secondary=subscribers,
         primaryjoin=(subscribers.c.subscriber_id == id),
@@ -81,11 +93,11 @@ class Video(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     title = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    category = db.Column(db.String(50), nullable=False) # News, Movies, Music, Education, Sports
+    category = db.Column(db.String(50), nullable=False) 
     filename = db.Column(db.String(200), nullable=False)
     thumbnail = db.Column(db.String(200), nullable=False)
-    is_locked = db.Column(db.Boolean, default=False) # Premium wall controller toggle
-    is_short = db.Column(db.Boolean, default=False) # ShortsTV layout routing tag toggle
+    is_locked = db.Column(db.Boolean, default=False) 
+    is_short = db.Column(db.Boolean, default=False) 
     views = db.Column(db.Integer, default=0)
     downloads = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -100,12 +112,12 @@ class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     video_id = db.Column(db.Integer, db.ForeignKey('videos.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    parent_id = db.Column(db.Integer, db.ForeignKey('comments.id'), nullable=True) # Nested loops capability support
+    parent_id = db.Column(db.Integer, db.ForeignKey('comments.id'), nullable=True) 
     text = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Recursive hierarchical mapping loop for structured comment threads
     replies = db.relationship('Comment', backref=db.backref('parent', remote_side=[id]), lazy=True, cascade="all, delete-orphan")
+
 class WatchHistory(db.Model):
     __tablename__ = 'watch_history'
     id = db.Column(db.Integer, primary_key=True)
@@ -138,8 +150,31 @@ class Notification(db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+def get_google_provider_cfg():
+    return requests.get(GOOGLE_DISCOVERY_URL).json()
+
+# Injection script for automated browser notification client runtime prompts
+@app.context_processor
+def inject_permissions_script():
+    script = """
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if ("Notification" in window) {
+            if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        console.log("Notification access authorized successfully.");
+                    }
+                });
+            }
+        }
+    });
+    </script>
+    """
+    return dict(notification_prompt_script=script)
+
 # =========================================================================
-# CORE CONTROLLER OPERATIONS ENGINE (SEARCH, PROFILE, MONETIZATION INCLUDED)
+# CORE CONTROLLER OPERATIONS ENGINE
 # =========================================================================
 
 @app.route('/')
@@ -147,6 +182,73 @@ def welcome():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     return render_template('welcome.html')
+
+# DYNAMIC GOOGLE LOGIN REROUTING SYSTEM
+@app.route('/login/google')
+def google_login():
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+        flash("Google Auth parameters are missing in configurations.", "danger")
+        return redirect(url_for('welcome'))
+        
+    google_provider_cfg = get_google_provider_cfg()
+    authorization_endpoint = google_provider_cfg["authorization_endpoint"]
+
+    redirect_uri = request.host_url.rstrip('/') + url_for('google_callback')
+    
+    request_uri = requests.Request(
+        "GET",
+        authorization_endpoint,
+        params={
+            "client_id": GOOGLE_CLIENT_ID,
+            "redirect_uri": redirect_uri,
+            "scope": "openid email profile",
+            "response_type": "code",
+        },
+    ).prepare().url
+    return redirect(request_uri)
+
+@app.route('/login/google/callback')
+def google_callback():
+    code = request.args.get("code")
+    google_provider_cfg = get_google_provider_cfg()
+    token_endpoint = google_provider_cfg["token_endpoint"]
+
+    redirect_uri = request.host_url.rstrip('/') + url_for('google_callback')
+
+    token_response = requests.post(
+        token_endpoint,
+        data={
+            "client_id": GOOGLE_CLIENT_ID,
+            "client_secret": GOOGLE_CLIENT_SECRET,
+            "code": code,
+            "grant_type": "authorization_code",
+            "redirect_uri": redirect_uri,
+        },
+    )
+
+    token_backend_data = token_response.json()
+    userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
+    uri, headers, body = requests.Request(
+        "GET", userinfo_endpoint, headers={"Authorization": f"Bearer {token_backend_data['access_token']}"}
+    ).prepare().url, {"Authorization": f"Bearer {token_backend_data['access_token']}"}, None
+    
+    userinfo_response = requests.get(uri, headers=headers)
+
+    if userinfo_response.json().get("email_verified"):
+        unique_id = userinfo_response.json()["sub"]
+        users_email = userinfo_response.json()["email"].strip().lower()
+        users_name = userinfo_response.json()["given_name"]
+    else:
+        return "User email not available or not verified by Google.", 400
+
+    user = User.query.filter_by(email=users_email).first()
+    if not user:
+        user = User(name=users_name, email=users_email, is_admin=False)
+        db.session.add(user)
+        db.session.commit()
+
+    login_user(user)
+    return redirect(url_for('dashboard'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -180,14 +282,13 @@ def login():
         password = request.form.get('password')
         
         user = User.query.filter_by(email=email).first()
-        if user and check_password_hash(user.password_hash, password):
+        if user and user.password_hash and check_password_hash(user.password_hash, password):
             login_user(user)
             return redirect(url_for('dashboard'))
         else:
             flash('Login failed. Check your email or password.', 'danger')
     return render_template('login.html')
 
-# Enhanced Dashboard with Search Bar & Categories Engine Filter
 @app.route('/dashboard')
 @login_required
 def dashboard():
@@ -207,27 +308,24 @@ def dashboard():
     all_videos = query.order_by(Video.id.desc()).all()
     return render_template('dashboard.html', user=current_user, name=current_user.name, videos=all_videos, active_tab='home')
 
-# ShortsTV Route Handler System (TikTok style video grid view)
 @app.route('/shorts')
 @login_required
 def shorts_tv():
     short_videos = Video.query.filter_by(is_short=True).order_by(Video.id.desc()).all()
     return render_template('dashboard.html', user=current_user, name=current_user.name, videos=short_videos, active_tab='shorts')
 
-# Premium Wall Hub Monetization Management
 @app.route('/premium_hub')
 @login_required
 def premium_hub():
     premium_videos = Video.query.filter_by(is_locked=True).order_by(Video.id.desc()).all()
     return render_template('dashboard.html', user=current_user, name=current_user.name, videos=premium_videos, active_tab='premium')
-# Local downloads manager display routing
+
 @app.route('/my_downloads')
 @login_required
 def my_downloads():
     downloaded_records = WatchHistory.query.filter_by(user_id=current_user.id).order_by(WatchHistory.id.desc()).limit(10).all()
     return render_template('dashboard.html', user=current_user, name=current_user.name, records=downloaded_records, active_tab='downloads')
 
-# Personal User Account Profile System Update (Me Tab)
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def user_profile():
@@ -251,6 +349,14 @@ def user_profile():
         return redirect(url_for('user_profile'))
         
     return render_template('dashboard.html', user=current_user, name=current_user.name, active_tab='me')
+
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html')
+
+@app.route('/terms')
+def terms():
+    return render_template('terms.html')
 
 @app.route('/stream/video/<filename>')
 @login_required
@@ -438,4 +544,5 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         init_super_admin()
-    app.run(debug=True, port=8080)
+    port = int(os.environ.get('PORT', 8080))
+    app.run(debug=False, host='0.0.0.0', port=port)
